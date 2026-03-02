@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.obsidian.md)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npm install)",
+      "Bash(npx tsc --noEmit --skipLibCheck)",
+      "Bash(node esbuild.config.mjs production)",
+      "Bash(npm run build)",
+      "WebFetch(domain:obsidian.md)"
+    ]
+  }
+}

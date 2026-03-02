@@ -1,0 +1,429 @@
+/* ===== Left Sidebar ===== */
+.rays-left-sidebar {
+  padding: 8px;
+  overflow-y: auto;
+}
+
+.rays-section-header h5 {
+  margin: 12px 0 6px;
+  font-size: 0.9em;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rays-section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 0 6px;
+}
+
+.rays-section-header-row h5 {
+  margin: 0;
+}
+
+.rays-add-btn {
+  background: none;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1em;
+  line-height: 1;
+  padding: 0 6px;
+}
+
+.rays-add-btn:hover {
+  color: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+}
+
+.rays-new-meeting-input {
+  margin-top: 8px;
+}
+
+.rays-modal-row {
+  margin-bottom: 8px;
+}
+
+.rays-modal-label {
+  display: block;
+  font-size: 0.85em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.rays-modal-divider {
+  border: none;
+  border-top: 1px solid var(--background-modifier-border);
+  margin: 16px 0;
+}
+
+.rays-modal-row select {
+  width: 100%;
+}
+
+.rays-create-daily-row {
+  padding: 4px 0;
+}
+
+.rays-create-daily-btn {
+  background: none;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85em;
+  padding: 4px 10px;
+  width: 100%;
+}
+
+.rays-create-daily-btn:hover {
+  color: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+}
+
+.rays-empty-message {
+  color: var(--text-faint);
+  font-size: 0.85em;
+  padding: 4px 0;
+  font-style: italic;
+}
+
+/* ===== Calendar ===== */
+.rays-calendar {
+  background: var(--background-secondary);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.rays-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.rays-calendar-title {
+  font-weight: 600;
+  font-size: 0.95em;
+}
+
+.rays-calendar-nav {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8em;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.rays-calendar-nav:hover {
+  background: var(--background-modifier-hover);
+}
+
+.rays-calendar-toggle {
+  margin-bottom: 6px;
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+.rays-calendar-weekend-label {
+  cursor: pointer;
+}
+
+.rays-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.rays-calendar-grid.show-weekends {
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.rays-calendar-day-header {
+  font-size: 0.75em;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 2px 0;
+}
+
+.rays-calendar-day {
+  font-size: 0.85em;
+  padding: 3px 2px 1px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rays-calendar-day-number {
+  line-height: 1.2;
+}
+
+.rays-calendar-day:hover {
+  background: var(--background-modifier-hover);
+}
+
+.rays-calendar-day.empty {
+  cursor: default;
+}
+
+.rays-calendar-day.today .rays-calendar-day-number {
+  font-weight: 700;
+  color: var(--interactive-accent);
+}
+
+.rays-calendar-day.selected {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.rays-calendar-day.selected .rays-calendar-day-number {
+  color: var(--text-on-accent);
+}
+
+/* Calendar dots */
+.rays-calendar-dots {
+  display: flex;
+  gap: 2px;
+  margin-top: 1px;
+}
+
+.rays-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--background-modifier-border);
+}
+
+.rays-dot.filled.rays-dot-daily {
+  background: var(--interactive-accent);
+}
+
+.rays-dot.filled.rays-dot-meeting {
+  background: #4a9eff;
+}
+
+.rays-dot.filled.rays-dot-recurring {
+  background: #7c4dff;
+}
+
+.rays-calendar-day.selected .rays-dot:not(.filled) {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.rays-calendar-day.selected .rays-dot.filled.rays-dot-daily {
+  background: white;
+}
+
+.rays-calendar-day.selected .rays-dot.filled.rays-dot-meeting {
+  background: #a0d0ff;
+}
+
+.rays-calendar-day.selected .rays-dot.filled.rays-dot-recurring {
+  background: #c4a8ff;
+}
+
+/* ===== Heading / Meeting Lists ===== */
+.rays-heading-list,
+.rays-meeting-list,
+.rays-recurring-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rays-heading-item,
+.rays-meeting-item,
+.rays-recurring-item {
+  padding: 3px 0;
+}
+
+.rays-heading-link,
+.rays-meeting-link,
+.rays-recurring-link {
+  color: var(--text-normal);
+  text-decoration: none;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.rays-heading-link:hover,
+.rays-meeting-link:hover,
+.rays-recurring-link:hover {
+  color: var(--interactive-accent);
+  text-decoration: underline;
+}
+
+.rays-recurring-item.has-entry .rays-recurring-link {
+  font-weight: 600;
+}
+
+/* ===== Right Sidebar (To-Do) ===== */
+.rays-right-sidebar {
+  padding: 8px;
+  overflow-y: auto;
+}
+
+.rays-todo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.rays-todo-header h4 {
+  margin: 0;
+  font-size: 1em;
+}
+
+.rays-todo-switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  position: relative;
+}
+
+.rays-todo-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.rays-todo-slider {
+  width: 28px;
+  height: 16px;
+  background: var(--background-modifier-border);
+  border-radius: 8px;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.rays-todo-slider::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+}
+
+.rays-todo-switch input:checked + .rays-todo-slider {
+  background: var(--interactive-accent);
+}
+
+.rays-todo-switch input:checked + .rays-todo-slider::after {
+  transform: translateX(12px);
+}
+
+.rays-todo-switch-label {
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+.rays-todo-section {
+  margin-bottom: 12px;
+}
+
+.rays-todo-section-header {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85em;
+  padding: 4px 0;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.rays-todo-section-header:hover {
+  color: var(--text-normal);
+}
+
+.rays-todo-arrow {
+  font-size: 0.7em;
+}
+
+.rays-todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rays-todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 0.85em;
+  flex-wrap: wrap;
+}
+
+.rays-todo-item.completed .rays-todo-text {
+  text-decoration: line-through;
+  color: var(--text-faint);
+}
+
+.rays-todo-check {
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.rays-todo-check:hover {
+  color: var(--interactive-accent);
+}
+
+.rays-todo-text {
+  flex: 1;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.rays-todo-text:hover {
+  color: var(--interactive-accent);
+}
+
+.rays-todo-date {
+  font-size: 0.8em;
+  color: var(--text-faint);
+}
+
+.rays-todo-badge {
+  font-size: 0.7em;
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.rays-badge-daily {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.rays-badge-meeting {
+  background: #4a9eff;
+  color: white;
+}
+
+.rays-badge-recurring {
+  background: #7c4dff;
+  color: white;
+}
+
+.rays-badge-other {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}

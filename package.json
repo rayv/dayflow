@@ -1,0 +1,16 @@
+{
+  "name": "dayflow",
+  "version": "1.0.0",
+  "description": "Three-panel productivity layout for Obsidian",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs dev",
+    "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.25.0",
+    "obsidian": "latest",
+    "typescript": "^5.7.0"
+  }
+}

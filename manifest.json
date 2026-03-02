@@ -1,0 +1,9 @@
+{
+  "id": "dayflow",
+  "name": "DayFlow",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Three-panel productivity layout with calendar, meetings, and to-do tracking",
+  "author": "Ray",
+  "isDesktopOnly": false
+}
