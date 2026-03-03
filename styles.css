@@ -268,6 +268,13 @@
 }
 
 /* ===== Right Sidebar (To-Do) ===== */
+button.rays-todo-section-header,
+button.rays-todo-checkbox,
+button.rays-todo-text {
+  all: unset;
+  box-sizing: border-box;
+}
+
 .rays-right-sidebar {
   padding: 10px;
   overflow-y: auto;

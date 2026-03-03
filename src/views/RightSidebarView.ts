@@ -115,7 +115,9 @@ export class RightSidebarView extends ItemView {
     const isCollapsed = this.collapsedSections.has(key);
     const section = container.createDiv({ cls: "rays-todo-section" });
 
-    const sectionHeader = section.createDiv({ cls: "rays-todo-section-header" });
+    const sectionHeader = section.createEl("button", { cls: "rays-todo-section-header" });
+    sectionHeader.setAttribute("aria-expanded", String(!isCollapsed));
+    sectionHeader.setAttribute("aria-label", `${this.formatGroupLabel(key)}, ${items.length} items`);
     const headerLeft = sectionHeader.createDiv({ cls: "rays-todo-section-header-left" });
     headerLeft.createSpan({ cls: `rays-todo-arrow ${isCollapsed ? "collapsed" : ""}` });
     headerLeft.createSpan({ cls: "rays-todo-section-label", text: this.formatGroupLabel(key) });
@@ -143,14 +145,20 @@ export class RightSidebarView extends ItemView {
     const completedCls = todo.completed ? " completed" : "";
     const item = list.createDiv({ cls: `rays-todo-item${completedCls}${priorityCls}` });
 
-    const checkEl = item.createDiv({ cls: `rays-todo-checkbox ${todo.completed ? "checked" : ""}` });
+    const checkEl = item.createEl("button", { cls: `rays-todo-checkbox ${todo.completed ? "checked" : ""}` });
+    checkEl.setAttribute("aria-pressed", String(todo.completed));
+    checkEl.setAttribute("aria-label", todo.completed ? "Mark incomplete" : "Mark complete");
     if (todo.completed) {
       checkEl.createSpan({ cls: "rays-todo-checkmark" });
     }
-    checkEl.addEventListener("click", (e) => {
+    checkEl.addEventListener("click", async (e) => {
       e.preventDefault();
       e.stopPropagation();
-      this.toggleTodo(todo);
+      try {
+        await this.toggleTodo(todo);
+      } catch {
+        await this.refresh();
+      }
     });
 
     const content = item.createDiv({ cls: "rays-todo-content" });
@@ -163,8 +171,9 @@ export class RightSidebarView extends ItemView {
       });
     }
 
-    const textSpan = topRow.createSpan({ cls: "rays-todo-text", text: todo.text });
-    textSpan.addEventListener("click", (e) => {
+    const textBtn = topRow.createEl("button", { cls: "rays-todo-text", text: todo.text });
+    textBtn.setAttribute("aria-label", `Open ${todo.text}`);
+    textBtn.addEventListener("click", (e) => {
       e.preventDefault();
       this.onTodoClick(todo.filePath, todo.lineNumber);
     });
