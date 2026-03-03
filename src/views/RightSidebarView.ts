@@ -3,6 +3,8 @@ import { VIEW_TYPE_RIGHT_SIDEBAR, TodoItem } from "../types";
 import { extractTodos } from "../utils/todoExtractor";
 import { toDateStr } from "../utils/dateUtils";
 
+const PRIORITY_LABELS: Record<string, string> = { high: "High", medium: "Med", low: "Low" };
+
 export class RightSidebarView extends ItemView {
   private showCompleted: boolean = false;
   private todos: TodoItem[] = [];
@@ -40,7 +42,26 @@ export class RightSidebarView extends ItemView {
     container.empty();
     container.addClass("rays-right-sidebar");
 
-    // Header with toggle
+    this.renderHeader(container);
+
+    const filtered = this.showCompleted
+      ? this.todos
+      : this.todos.filter((t) => !t.completed);
+
+    if (filtered.length === 0) {
+      this.renderEmptyState(container);
+      return;
+    }
+
+    const sortedGroups = this.groupAndSort(filtered);
+    const todayStr = toDateStr(new Date());
+
+    for (const { key, items } of sortedGroups) {
+      this.renderSection(container, key, items, todayStr);
+    }
+  }
+
+  private renderHeader(container: HTMLElement) {
     const header = container.createDiv({ cls: "rays-todo-header" });
     header.createEl("h4", { text: "To Do Items" });
 
@@ -53,23 +74,18 @@ export class RightSidebarView extends ItemView {
     });
     toggleLabel.createSpan({ cls: "rays-todo-slider" });
     toggleLabel.createSpan({ cls: "rays-todo-switch-label", text: "Done" });
+  }
 
-    // Filter todos
-    const filtered = this.showCompleted
-      ? this.todos
-      : this.todos.filter((t) => !t.completed);
+  private renderEmptyState(container: HTMLElement) {
+    const emptyState = container.createDiv({ cls: "rays-todo-empty" });
+    emptyState.createDiv({ cls: "rays-todo-empty-icon", text: "\u2714" });
+    emptyState.createDiv({
+      cls: "rays-todo-empty-text",
+      text: this.showCompleted ? "No tasks found" : "All caught up!",
+    });
+  }
 
-    if (filtered.length === 0) {
-      const emptyState = container.createDiv({ cls: "rays-todo-empty" });
-      emptyState.createDiv({ cls: "rays-todo-empty-icon", text: "\u2714" });
-      emptyState.createDiv({
-        cls: "rays-todo-empty-text",
-        text: this.showCompleted ? "No tasks found" : "All caught up!",
-      });
-      return;
-    }
-
-    // Group by source type
+  private groupAndSort(filtered: TodoItem[]): { key: string; items: TodoItem[] }[] {
     const groups = new Map<string, TodoItem[]>();
     for (const todo of filtered) {
       const key = this.groupKey(todo);
@@ -77,105 +93,100 @@ export class RightSidebarView extends ItemView {
       groups.get(key)!.push(todo);
     }
 
-    // Sort groups by date (recent first), then by type
     const sortedKeys = [...groups.keys()].sort((a, b) => {
       return this.sortKeyForGroup(b).localeCompare(this.sortKeyForGroup(a));
     });
 
-    const todayStr = toDateStr(new Date());
-
-    for (const key of sortedKeys) {
+    return sortedKeys.map((key) => {
       const items = groups.get(key)!;
-
-      // Sort items within group: priority (high→med→low→none), then due date (earliest first, null last)
       items.sort((a, b) => {
         const pa = this.priorityRank(a.priority);
         const pb = this.priorityRank(b.priority);
         if (pa !== pb) return pa - pb;
-
         const da = a.dueDate || "9999-99-99";
         const db = b.dueDate || "9999-99-99";
         return da.localeCompare(db);
       });
+      return { key, items };
+    });
+  }
 
-      const isCollapsed = this.collapsedSections.has(key);
-      const sourceType = key.split(":")[0];
+  private renderSection(container: HTMLElement, key: string, items: TodoItem[], todayStr: string) {
+    const isCollapsed = this.collapsedSections.has(key);
+    const section = container.createDiv({ cls: "rays-todo-section" });
 
-      const section = container.createDiv({ cls: `rays-todo-section` });
+    const sectionHeader = section.createDiv({ cls: "rays-todo-section-header" });
+    const headerLeft = sectionHeader.createDiv({ cls: "rays-todo-section-header-left" });
+    headerLeft.createSpan({ cls: `rays-todo-arrow ${isCollapsed ? "collapsed" : ""}` });
+    headerLeft.createSpan({ cls: "rays-todo-section-label", text: this.formatGroupLabel(key) });
+    sectionHeader.createSpan({ cls: "rays-todo-section-count", text: String(items.length) });
 
-      // Section header (collapsible)
-      const sectionHeader = section.createDiv({ cls: "rays-todo-section-header" });
-      const headerLeft = sectionHeader.createDiv({ cls: "rays-todo-section-header-left" });
-      headerLeft.createSpan({ cls: `rays-todo-arrow ${isCollapsed ? "collapsed" : ""}` });
-      headerLeft.createSpan({ cls: "rays-todo-section-label", text: this.formatGroupLabel(key) });
-      sectionHeader.createSpan({ cls: "rays-todo-section-count", text: String(items.length) });
+    sectionHeader.addEventListener("click", () => {
+      if (this.collapsedSections.has(key)) {
+        this.collapsedSections.delete(key);
+      } else {
+        this.collapsedSections.add(key);
+      }
+      this.render();
+    });
 
-      sectionHeader.addEventListener("click", () => {
-        if (this.collapsedSections.has(key)) {
-          this.collapsedSections.delete(key);
-        } else {
-          this.collapsedSections.add(key);
-        }
-        this.render();
+    if (isCollapsed) return;
+
+    const list = section.createDiv({ cls: "rays-todo-list" });
+    for (const todo of items) {
+      this.renderTodoItem(list, todo, todayStr);
+    }
+  }
+
+  private renderTodoItem(list: HTMLElement, todo: TodoItem, todayStr: string) {
+    const priorityCls = todo.priority ? ` priority-${todo.priority}` : "";
+    const completedCls = todo.completed ? " completed" : "";
+    const item = list.createDiv({ cls: `rays-todo-item${completedCls}${priorityCls}` });
+
+    const checkEl = item.createDiv({ cls: `rays-todo-checkbox ${todo.completed ? "checked" : ""}` });
+    if (todo.completed) {
+      checkEl.createSpan({ cls: "rays-todo-checkmark" });
+    }
+    checkEl.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggleTodo(todo);
+    });
+
+    const content = item.createDiv({ cls: "rays-todo-content" });
+    const topRow = content.createDiv({ cls: "rays-todo-top-row" });
+
+    if (todo.priority) {
+      topRow.createSpan({
+        cls: `rays-todo-priority rays-todo-priority-${todo.priority}`,
+        text: PRIORITY_LABELS[todo.priority],
       });
+    }
 
-      if (isCollapsed) continue;
+    const textSpan = topRow.createSpan({ cls: "rays-todo-text", text: todo.text });
+    textSpan.addEventListener("click", (e) => {
+      e.preventDefault();
+      this.onTodoClick(todo.filePath, todo.lineNumber);
+    });
 
-      // Items
-      const list = section.createDiv({ cls: "rays-todo-list" });
-      for (const todo of items) {
-        const priorityCls = todo.priority ? ` priority-${todo.priority}` : "";
-        const completedCls = todo.completed ? " completed" : "";
-        const item = list.createDiv({ cls: `rays-todo-item${completedCls}${priorityCls}` });
+    if (todo.dueDate) {
+      this.renderDueDateBadge(content, todo, todayStr);
+    }
+  }
 
-        // Custom checkbox
-        const checkEl = item.createDiv({ cls: `rays-todo-checkbox ${todo.completed ? "checked" : ""}` });
-        if (todo.completed) {
-          checkEl.createSpan({ cls: "rays-todo-checkmark" });
-        }
-        checkEl.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          this.toggleTodo(todo);
-        });
-
-        // Content column
-        const content = item.createDiv({ cls: "rays-todo-content" });
-
-        // Top row: priority pill + text
-        const topRow = content.createDiv({ cls: "rays-todo-top-row" });
-
-        if (todo.priority) {
-          const priorityLabels = { high: "High", medium: "Med", low: "Low" };
-          topRow.createSpan({
-            cls: `rays-todo-priority rays-todo-priority-${todo.priority}`,
-            text: priorityLabels[todo.priority],
-          });
-        }
-
-        const textSpan = topRow.createSpan({ cls: "rays-todo-text", text: todo.text });
-        textSpan.addEventListener("click", (e) => {
-          e.preventDefault();
-          this.onTodoClick(todo.filePath, todo.lineNumber);
-        });
-
-        // Due date (below text if present)
-        if (todo.dueDate) {
-          let dueCls = "rays-todo-due future";
-          let dueLabel = todo.dueDate;
-          if (!todo.completed) {
-            if (todo.dueDate < todayStr) {
-              dueCls = "rays-todo-due overdue";
-              dueLabel = `Overdue \u00B7 ${todo.dueDate}`;
-            } else if (todo.dueDate === todayStr) {
-              dueCls = "rays-todo-due due-today";
-              dueLabel = "Due today";
-            }
-          }
-          content.createDiv({ cls: dueCls, text: dueLabel });
-        }
+  private renderDueDateBadge(content: HTMLElement, todo: TodoItem, todayStr: string) {
+    let dueCls = "rays-todo-due future";
+    let dueLabel = todo.dueDate!;
+    if (!todo.completed) {
+      if (todo.dueDate! < todayStr) {
+        dueCls = "rays-todo-due overdue";
+        dueLabel = `Overdue \u00B7 ${todo.dueDate}`;
+      } else if (todo.dueDate === todayStr) {
+        dueCls = "rays-todo-due due-today";
+        dueLabel = "Due today";
       }
     }
+    content.createDiv({ cls: dueCls, text: dueLabel });
   }
 
   private async toggleTodo(todo: TodoItem) {
@@ -217,7 +228,7 @@ export class RightSidebarView extends ItemView {
     const parts = key.split(":");
     const type = parts[0] as TodoItem["sourceType"];
     const date = parts[1];
-    const name = parts.slice(2).join(":"); // name might contain colons
+    const name = parts.slice(2).join(":");
     if (date === "undated") {
       return `${name} (${this.sourceTypeLabel(type)})`;
     }
@@ -229,7 +240,6 @@ export class RightSidebarView extends ItemView {
     const type = parts[0];
     const date = parts[1];
     const order = ["daily", "meeting", "recurring", "other"];
-    // Sort by date descending (recent first), then by type order
     const dateSort = date === "undated" ? "0000-00-00" : date;
     return `${dateSort}:${String(order.indexOf(type)).padStart(2, "0")}`;
   }
