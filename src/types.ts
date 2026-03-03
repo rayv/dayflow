@@ -9,6 +9,8 @@ export interface TodoItem {
   sourceType: "daily" | "meeting" | "recurring" | "other";
   sourceName: string; // "Daily", person name, topic name, or filename
   date: string | null; // YYYY-MM-DD or null if not in a dated folder
+  priority: "high" | "medium" | "low" | null; // !!! = high, !! = medium, ! = low
+  dueDate: string | null; // YYYY-MM-DD from 📅 emoji syntax
 }
 
 export interface DateChangeEvent {
