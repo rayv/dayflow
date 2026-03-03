@@ -51,9 +51,7 @@ vault/
 
 ### From Community Plugins
 
-1. Open **Settings** > **Community plugins** in Obsidian.
-2. Click **Browse** and search for **DayFlow**.
-3. Click **Install**, then **Enable**.
+_Not yet available, but hopefully soon!_
 
 ### Manual Installation
 
