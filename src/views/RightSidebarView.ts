@@ -1,6 +1,7 @@
 import { App, ItemView, WorkspaceLeaf, TFile } from "obsidian";
 import { VIEW_TYPE_RIGHT_SIDEBAR, TodoItem } from "../types";
 import { extractTodos } from "../utils/todoExtractor";
+import { toDateStr } from "../utils/dateUtils";
 
 export class RightSidebarView extends ItemView {
   private showCompleted: boolean = false;
@@ -59,9 +60,11 @@ export class RightSidebarView extends ItemView {
       : this.todos.filter((t) => !t.completed);
 
     if (filtered.length === 0) {
-      container.createDiv({
-        cls: "rays-empty-message",
-        text: this.showCompleted ? "No tasks found" : "No open tasks found",
+      const emptyState = container.createDiv({ cls: "rays-todo-empty" });
+      emptyState.createDiv({ cls: "rays-todo-empty-icon", text: "\u2714" });
+      emptyState.createDiv({
+        cls: "rays-todo-empty-text",
+        text: this.showCompleted ? "No tasks found" : "All caught up!",
       });
       return;
     }
@@ -79,15 +82,34 @@ export class RightSidebarView extends ItemView {
       return this.sortKeyForGroup(b).localeCompare(this.sortKeyForGroup(a));
     });
 
+    const todayStr = toDateStr(new Date());
+
     for (const key of sortedKeys) {
       const items = groups.get(key)!;
-      const section = container.createDiv({ cls: "rays-todo-section" });
+
+      // Sort items within group: priority (high→med→low→none), then due date (earliest first, null last)
+      items.sort((a, b) => {
+        const pa = this.priorityRank(a.priority);
+        const pb = this.priorityRank(b.priority);
+        if (pa !== pb) return pa - pb;
+
+        const da = a.dueDate || "9999-99-99";
+        const db = b.dueDate || "9999-99-99";
+        return da.localeCompare(db);
+      });
+
       const isCollapsed = this.collapsedSections.has(key);
+      const sourceType = key.split(":")[0];
+
+      const section = container.createDiv({ cls: `rays-todo-section` });
 
       // Section header (collapsible)
       const sectionHeader = section.createDiv({ cls: "rays-todo-section-header" });
-      const arrow = sectionHeader.createSpan({ cls: "rays-todo-arrow", text: isCollapsed ? "\u25B6" : "\u25BC" });
-      sectionHeader.createSpan({ text: ` ${this.formatGroupLabel(key)} (${items.length})` });
+      const headerLeft = sectionHeader.createDiv({ cls: "rays-todo-section-header-left" });
+      headerLeft.createSpan({ cls: `rays-todo-arrow ${isCollapsed ? "collapsed" : ""}` });
+      headerLeft.createSpan({ cls: "rays-todo-section-label", text: this.formatGroupLabel(key) });
+      sectionHeader.createSpan({ cls: "rays-todo-section-count", text: String(items.length) });
+
       sectionHeader.addEventListener("click", () => {
         if (this.collapsedSections.has(key)) {
           this.collapsedSections.delete(key);
@@ -100,22 +122,58 @@ export class RightSidebarView extends ItemView {
       if (isCollapsed) continue;
 
       // Items
-      const list = section.createEl("ul", { cls: "rays-todo-list" });
+      const list = section.createDiv({ cls: "rays-todo-list" });
       for (const todo of items) {
-        const li = list.createEl("li", { cls: `rays-todo-item ${todo.completed ? "completed" : ""}` });
+        const priorityCls = todo.priority ? ` priority-${todo.priority}` : "";
+        const completedCls = todo.completed ? " completed" : "";
+        const item = list.createDiv({ cls: `rays-todo-item${completedCls}${priorityCls}` });
 
-        const checkSpan = li.createSpan({ cls: "rays-todo-check", text: todo.completed ? "\u2611" : "\u2610" });
-        checkSpan.addEventListener("click", (e) => {
+        // Custom checkbox
+        const checkEl = item.createDiv({ cls: `rays-todo-checkbox ${todo.completed ? "checked" : ""}` });
+        if (todo.completed) {
+          checkEl.createSpan({ cls: "rays-todo-checkmark" });
+        }
+        checkEl.addEventListener("click", (e) => {
           e.preventDefault();
           e.stopPropagation();
           this.toggleTodo(todo);
         });
 
-        const textSpan = li.createSpan({ cls: "rays-todo-text", text: todo.text });
+        // Content column
+        const content = item.createDiv({ cls: "rays-todo-content" });
+
+        // Top row: priority pill + text
+        const topRow = content.createDiv({ cls: "rays-todo-top-row" });
+
+        if (todo.priority) {
+          const priorityLabels = { high: "High", medium: "Med", low: "Low" };
+          topRow.createSpan({
+            cls: `rays-todo-priority rays-todo-priority-${todo.priority}`,
+            text: priorityLabels[todo.priority],
+          });
+        }
+
+        const textSpan = topRow.createSpan({ cls: "rays-todo-text", text: todo.text });
         textSpan.addEventListener("click", (e) => {
           e.preventDefault();
           this.onTodoClick(todo.filePath, todo.lineNumber);
         });
+
+        // Due date (below text if present)
+        if (todo.dueDate) {
+          let dueCls = "rays-todo-due future";
+          let dueLabel = todo.dueDate;
+          if (!todo.completed) {
+            if (todo.dueDate < todayStr) {
+              dueCls = "rays-todo-due overdue";
+              dueLabel = `Overdue \u00B7 ${todo.dueDate}`;
+            } else if (todo.dueDate === todayStr) {
+              dueCls = "rays-todo-due due-today";
+              dueLabel = "Due today";
+            }
+          }
+          content.createDiv({ cls: dueCls, text: dueLabel });
+        }
       }
     }
   }
@@ -139,6 +197,15 @@ export class RightSidebarView extends ItemView {
 
     await this.app.vault.modify(file, lines.join("\n"));
     await this.refresh();
+  }
+
+  private priorityRank(p: TodoItem["priority"]): number {
+    switch (p) {
+      case "high": return 0;
+      case "medium": return 1;
+      case "low": return 2;
+      default: return 3;
+    }
   }
 
   private groupKey(todo: TodoItem): string {
