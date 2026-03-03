@@ -271,6 +271,10 @@
 .rays-right-sidebar {
   padding: 10px;
   overflow-y: auto;
+  --rays-priority-high: #e54545;
+  --rays-priority-medium: #e5a545;
+  --rays-priority-medium-text: #c98a2e;
+  --rays-priority-low: #4a9eff;
 }
 
 /* Header */
@@ -500,17 +504,17 @@
 
 /* Priority item left border */
 .rays-todo-item.priority-high {
-  border-left: 3px solid #e54545;
+  border-left: 3px solid var(--rays-priority-high);
   padding-left: 7px;
 }
 
 .rays-todo-item.priority-medium {
-  border-left: 3px solid #e5a545;
+  border-left: 3px solid var(--rays-priority-medium);
   padding-left: 7px;
 }
 
 .rays-todo-item.priority-low {
-  border-left: 3px solid #4a9eff;
+  border-left: 3px solid var(--rays-priority-low);
   padding-left: 7px;
 }
 
@@ -543,17 +547,17 @@
 
 .rays-todo-priority-high {
   background: rgba(229, 69, 69, 0.15);
-  color: #e54545;
+  color: var(--rays-priority-high);
 }
 
 .rays-todo-priority-medium {
   background: rgba(229, 165, 69, 0.15);
-  color: #c98a2e;
+  color: var(--rays-priority-medium-text);
 }
 
 .rays-todo-priority-low {
   background: rgba(74, 158, 255, 0.15);
-  color: #4a9eff;
+  color: var(--rays-priority-low);
 }
 
 /* Todo text */
@@ -587,13 +591,13 @@
 
 .rays-todo-due.overdue {
   background: rgba(229, 69, 69, 0.12);
-  color: #e54545;
+  color: var(--rays-priority-high);
   font-weight: 600;
 }
 
 .rays-todo-due.due-today {
   background: rgba(229, 165, 69, 0.12);
-  color: #c98a2e;
+  color: var(--rays-priority-medium-text);
   font-weight: 600;
 }
 

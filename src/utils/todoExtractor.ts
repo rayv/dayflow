@@ -28,8 +28,12 @@ function parseMetadata(rawText: string): { text: string; priority: TodoItem["pri
   // Extract due date: 📅 YYYY-MM-DD or due:YYYY-MM-DD (strip from display text)
   const dueDateMatch = text.match(/(?:📅\s*|due:)(\d{4}-\d{2}-\d{2})/);
   if (dueDateMatch) {
-    dueDate = dueDateMatch[1];
-    text = text.replace(/\s*(?:📅\s*|due:)\d{4}-\d{2}-\d{2}\s*/, " ").trim();
+    const [y, m, d] = dueDateMatch[1].split("-").map(Number);
+    const parsed = new Date(y, m - 1, d);
+    if (parsed.getFullYear() === y && parsed.getMonth() === m - 1 && parsed.getDate() === d) {
+      dueDate = dueDateMatch[1];
+      text = text.replace(/\s*(?:📅\s*|due:)\d{4}-\d{2}-\d{2}\s*/, " ").trim();
+    }
   }
 
   // Extract priority: !!! / !! / ! at the start (strip from display text)
