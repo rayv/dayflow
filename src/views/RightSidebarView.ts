@@ -118,9 +118,8 @@ export class RightSidebarView extends ItemView {
     const sectionHeader = section.createEl("button", { cls: "rays-todo-section-header" });
     sectionHeader.setAttribute("aria-expanded", String(!isCollapsed));
     sectionHeader.setAttribute("aria-label", `${this.formatGroupLabel(key)}, ${items.length} items`);
-    const headerLeft = sectionHeader.createDiv({ cls: "rays-todo-section-header-left" });
-    headerLeft.createSpan({ cls: `rays-todo-arrow ${isCollapsed ? "collapsed" : ""}` });
-    headerLeft.createSpan({ cls: "rays-todo-section-label", text: this.formatGroupLabel(key) });
+    sectionHeader.createSpan({ cls: `rays-todo-arrow ${isCollapsed ? "collapsed" : ""}` });
+    sectionHeader.createSpan({ cls: "rays-todo-section-label", text: this.formatGroupLabel(key) });
     sectionHeader.createSpan({ cls: "rays-todo-section-count", text: String(items.length) });
 
     sectionHeader.addEventListener("click", () => {

@@ -8,7 +8,9 @@
       "Bash(npx tsc --noEmit --skipLibCheck)",
       "Bash(node esbuild.config.mjs production)",
       "Bash(npm run build)",
-      "WebFetch(domain:obsidian.md)"
+      "WebFetch(domain:obsidian.md)",
+      "Bash(git add src/views/RightSidebarView.ts styles.css)",
+      "Bash(git commit:*)"
     ]
   }
 }

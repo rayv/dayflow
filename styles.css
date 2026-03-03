@@ -4,6 +4,14 @@
   overflow-y: auto;
 }
 
+.rays-daily-outline,
+.rays-meetings-panel,
+.rays-recurring-panel {
+  border-top: 1px solid var(--background-modifier-border);
+  margin-top: 4px;
+  padding-top: 2px;
+}
+
 .rays-section-header h5 {
   margin: 12px 0 6px;
   font-size: 0.9em;
@@ -378,26 +386,20 @@ button.rays-todo-text {
   margin-bottom: 6px;
 }
 
-.rays-todo-section-header {
+button.rays-todo-section-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 6px;
   cursor: pointer;
   padding: 6px 8px;
   border-radius: 6px;
   user-select: none;
   transition: background 0.15s;
+  width: 100%;
 }
 
 .rays-todo-section-header:hover {
   background: var(--background-modifier-hover);
-}
-
-.rays-todo-section-header-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
 }
 
 .rays-todo-arrow {
@@ -429,6 +431,8 @@ button.rays-todo-text {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
 }
 
 .rays-todo-section-count {
@@ -454,7 +458,7 @@ button.rays-todo-text {
 /* Todo item */
 .rays-todo-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   padding: 7px 10px;
   border-radius: 6px;
@@ -475,7 +479,7 @@ button.rays-todo-text {
 }
 
 /* Custom checkbox */
-.rays-todo-checkbox {
+button.rays-todo-checkbox {
   width: 18px;
   height: 18px;
   border-radius: 4px;
@@ -486,7 +490,6 @@ button.rays-todo-text {
   align-items: center;
   justify-content: center;
   transition: all 0.15s;
-  margin-top: 1px;
 }
 
 .rays-todo-checkbox:hover {
@@ -536,7 +539,7 @@ button.rays-todo-text {
 
 .rays-todo-top-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
 }
 
@@ -568,7 +571,7 @@ button.rays-todo-text {
 }
 
 /* Todo text */
-.rays-todo-text {
+button.rays-todo-text {
   flex: 1;
   cursor: pointer;
   min-width: 0;
