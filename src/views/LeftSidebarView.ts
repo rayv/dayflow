@@ -1,10 +1,10 @@
-import { App, ItemView, TFile, WorkspaceLeaf } from "obsidian";
+import { App, ItemView, TFile, WorkspaceLeaf, setIcon } from "obsidian";
 import { VIEW_TYPE_LEFT_SIDEBAR } from "../types";
 import { CalendarWidget } from "./CalendarWidget";
 import { DailyOutline } from "./DailyOutline";
 import { MeetingsPanel } from "./MeetingsPanel";
 import { RecurringPanel } from "./RecurringPanel";
-import { toDateStr, dailyNotePath } from "../utils/dateUtils";
+import { toDateStr, fromDateStr, dailyNotePath } from "../utils/dateUtils";
 
 export class LeftSidebarView extends ItemView {
   private calendar: CalendarWidget | null = null;
@@ -17,6 +17,8 @@ export class LeftSidebarView extends ItemView {
   private createMeetingCallback: (dateStr: string, name: string) => void;
   private createDailyCallback: (dateStr: string) => void;
   private createRecurringCallback: (dateStr: string, name: string) => void;
+  private fullDayFlowCallback: (dateStr: string) => void;
+  private dateChangeCallback: (dateStr: string) => void;
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -25,6 +27,8 @@ export class LeftSidebarView extends ItemView {
     createMeetingCallback: (dateStr: string, name: string) => void,
     createDailyCallback: (dateStr: string) => void,
     createRecurringCallback: (dateStr: string, name: string) => void,
+    fullDayFlowCallback: (dateStr: string) => void,
+    dateChangeCallback: (dateStr: string) => void,
   ) {
     super(leaf);
     this.selectedDateStr = toDateStr(new Date());
@@ -33,6 +37,8 @@ export class LeftSidebarView extends ItemView {
     this.createMeetingCallback = createMeetingCallback;
     this.createDailyCallback = createDailyCallback;
     this.createRecurringCallback = createRecurringCallback;
+    this.fullDayFlowCallback = fullDayFlowCallback;
+    this.dateChangeCallback = dateChangeCallback;
   }
 
   getViewType(): string {
@@ -62,6 +68,9 @@ export class LeftSidebarView extends ItemView {
       if (file instanceof TFile) {
         this.openFileCallback(file);
       }
+
+      // Update any open Full Day Flow views
+      this.dateChangeCallback(this.selectedDateStr);
     });
 
     // Daily Outline
@@ -85,6 +94,15 @@ export class LeftSidebarView extends ItemView {
       this.createRecurringCallback(dateStr, name);
     });
 
+    // Full Day Flow button
+    const fdfBtn = container.createEl("button", { cls: "rays-fdf-btn" });
+    const iconSpan = fdfBtn.createSpan({ cls: "rays-fdf-btn-icon" });
+    setIcon(iconSpan, "book-open");
+    fdfBtn.createSpan({ text: "Full Day Flow" });
+    fdfBtn.addEventListener("click", () => {
+      this.fullDayFlowCallback(this.selectedDateStr);
+    });
+
     await this.refreshPanels();
   }
 
@@ -96,6 +114,18 @@ export class LeftSidebarView extends ItemView {
 
   getSelectedDateStr(): string {
     return this.selectedDateStr;
+  }
+
+  getShowWeekends(): boolean {
+    return this.calendar?.getShowWeekends() ?? false;
+  }
+
+  async setSelectedDate(dateStr: string) {
+    this.selectedDateStr = dateStr;
+    if (this.calendar) {
+      this.calendar.setSelectedDate(fromDateStr(dateStr));
+    }
+    await this.refreshPanels();
   }
 
   async onClose() {

@@ -100,6 +100,12 @@
   font-style: italic;
 }
 
+.rays-daily-open-link {
+  display: block;
+  padding: 4px 0;
+  font-size: 0.85em;
+}
+
 /* ===== Calendar ===== */
 .rays-calendar {
   background: var(--background-secondary);
@@ -273,6 +279,45 @@
 
 .rays-recurring-item.has-entry .rays-recurring-link {
   font-weight: 600;
+}
+
+/* Full Day Flow button in left sidebar */
+.rays-fdf-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% - 16px);
+  margin: 12px 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  font-size: 0.85em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.rays-fdf-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+.rays-fdf-btn:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.rays-fdf-btn-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.rays-fdf-btn-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* ===== Right Sidebar (To-Do) ===== */
@@ -621,4 +666,121 @@ button.rays-todo-text {
 
 .rays-todo-due.future {
   color: var(--text-faint);
+}
+
+/* ===== Full Day Flow View ===== */
+.rays-full-day-flow {
+  padding: 24px 32px;
+  overflow-y: auto;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.rays-fdf-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.rays-fdf-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rays-fdf-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  font-size: 0.75em;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.rays-fdf-nav-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+  color: var(--text-normal);
+}
+
+.rays-fdf-nav-btn:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.rays-fdf-nav-title {
+  flex: 1;
+  text-align: center;
+}
+
+.rays-fdf-nav-title h1 {
+  margin: 0 0 2px;
+  font-size: 1.5em;
+  font-weight: 700;
+}
+
+.rays-fdf-subtitle {
+  font-size: 0.85em;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rays-fdf-divider {
+  margin: 28px 0 16px;
+  padding: 10px 14px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid var(--interactive-accent);
+}
+
+.rays-fdf-divider-label {
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--text-normal);
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.rays-fdf-divider-label:hover {
+  color: var(--interactive-accent);
+}
+
+.rays-fdf-content {
+  margin-bottom: 8px;
+}
+
+.rays-fdf-content input[type="checkbox"] {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.rays-fdf-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+  color: var(--text-faint);
+}
+
+.rays-fdf-empty-icon {
+  font-size: 2.5em;
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.rays-fdf-empty-text {
+  font-size: 0.95em;
 }

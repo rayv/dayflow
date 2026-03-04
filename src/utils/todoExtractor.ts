@@ -51,7 +51,10 @@ function parseMetadata(rawText: string): { text: string; priority: TodoItem["pri
 
 export async function extractTodos(app: App): Promise<TodoItem[]> {
   const todos: TodoItem[] = [];
-  const files = app.vault.getMarkdownFiles();
+  const files = app.vault.getMarkdownFiles().filter((f) =>
+    f.path.startsWith("Daily Notes/") ||
+    f.path.startsWith("meetings/")
+  );
 
   // Get live editor content for the active file (hasn't been flushed to vault yet)
   let activeFilePath: string | null = null;

@@ -49,9 +49,13 @@ export class DailyOutline {
     }
 
     if (headings.length === 0) {
-      this.containerEl.createDiv({
-        cls: "rays-empty-message",
-        text: "No headings found",
+      const openLink = this.containerEl.createEl("a", {
+        cls: "rays-heading-link rays-daily-open-link",
+        text: file.basename,
+      });
+      openLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.onHeadingClick(file as TFile, 0);
       });
       return;
     }

@@ -1,5 +1,6 @@
 export const VIEW_TYPE_LEFT_SIDEBAR = "dayflow-left-sidebar";
 export const VIEW_TYPE_RIGHT_SIDEBAR = "dayflow-right-sidebar";
+export const VIEW_TYPE_FULL_DAY_FLOW = "dayflow-full-day-flow";
 
 export interface TodoItem {
   text: string;
