@@ -21,6 +21,7 @@ interface ContentSection {
 
 export class FullDayFlowView extends ItemView {
   private dateStr: string;
+  private renderId = 0;
   private openFileCallback: ((filePath: string, line?: number) => void) | null = null;
   private navigateCallback: ((dateStr: string) => void) | null = null;
   private skipWeekendsCallback: (() => boolean) | null = null;
@@ -70,6 +71,10 @@ export class FullDayFlowView extends ItemView {
     await this.render();
   }
 
+  getDateStr(): string {
+    return this.dateStr;
+  }
+
   async setDate(dateStr: string) {
     this.dateStr = dateStr;
     // updateHeader exists at runtime but isn't in the type definitions
@@ -96,11 +101,14 @@ export class FullDayFlowView extends ItemView {
   }
 
   private async render() {
+    const currentRenderId = ++this.renderId;
+    const snapshotDateStr = this.dateStr;
+    const date = fromDateStr(snapshotDateStr);
+
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty();
     container.addClass("rays-full-day-flow");
 
-    const date = fromDateStr(this.dateStr);
     const header = container.createDiv({ cls: "rays-fdf-header" });
 
     const nav = header.createDiv({ cls: "rays-fdf-nav" });
@@ -116,7 +124,10 @@ export class FullDayFlowView extends ItemView {
     nextBtn.setAttribute("aria-label", "Next day");
     nextBtn.addEventListener("click", () => this.navigateDay(1));
 
-    const sections = await this.gatherSections(date);
+    const sections = await this.gatherSections(snapshotDateStr, date);
+
+    // Abort if a newer render was triggered while we were gathering
+    if (currentRenderId !== this.renderId) return;
 
     if (sections.length === 0) {
       const empty = container.createDiv({ cls: "rays-fdf-empty" });
@@ -126,15 +137,16 @@ export class FullDayFlowView extends ItemView {
     }
 
     for (const section of sections) {
+      if (currentRenderId !== this.renderId) return;
       await this.renderSection(container, section);
     }
   }
 
-  private async gatherSections(date: Date): Promise<ContentSection[]> {
+  private async gatherSections(dateStr: string, date: Date): Promise<ContentSection[]> {
     const sections: ContentSection[] = [];
 
     // 1. Daily note
-    const dailyPath = dailyNotePath(this.dateStr);
+    const dailyPath = dailyNotePath(dateStr);
     const dailyFile = this.app.vault.getAbstractFileByPath(dailyPath);
     if (dailyFile instanceof TFile) {
       const content = await this.app.vault.cachedRead(dailyFile);
@@ -144,7 +156,7 @@ export class FullDayFlowView extends ItemView {
     }
 
     // 2. One-off meetings
-    const meetingsPath = meetingsFolderPath(this.dateStr);
+    const meetingsPath = meetingsFolderPath(dateStr);
     const meetingsFolder = this.app.vault.getAbstractFileByPath(meetingsPath);
     if (meetingsFolder instanceof TFolder) {
       const meetingFiles = meetingsFolder.children

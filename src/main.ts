@@ -340,5 +340,11 @@ export default class DayFlowPlugin extends Plugin {
       const view = leaf.view as RightSidebarView;
       await view.refresh();
     }
+
+    const fdfLeaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_FULL_DAY_FLOW);
+    for (const leaf of fdfLeaves) {
+      const view = leaf.view as FullDayFlowView;
+      await view.setDate(view.getDateStr());
+    }
   }
 }
