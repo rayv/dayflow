@@ -21,21 +21,24 @@ class NewMeetingModal extends Modal {
 
     input.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.key === "Enter") {
+        e.preventDefault();
         const val = input.getValue().trim();
         if (val) {
-          this.onSubmit(val);
           this.close();
+          this.onSubmit(val);
         }
       }
     });
 
     const btn = contentEl.createEl("button", { text: "Create", cls: "mod-cta" });
     btn.style.marginTop = "12px";
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const val = input.getValue().trim();
       if (val) {
-        this.onSubmit(val);
         this.close();
+        this.onSubmit(val);
       }
     });
   }

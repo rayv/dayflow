@@ -1,7 +1,8 @@
 import { Plugin, TFile, MarkdownView, Notice } from "obsidian";
-import { VIEW_TYPE_LEFT_SIDEBAR, VIEW_TYPE_RIGHT_SIDEBAR } from "./types";
+import { VIEW_TYPE_LEFT_SIDEBAR, VIEW_TYPE_RIGHT_SIDEBAR, VIEW_TYPE_FULL_DAY_FLOW } from "./types";
 import { LeftSidebarView } from "./views/LeftSidebarView";
 import { RightSidebarView } from "./views/RightSidebarView";
+import { FullDayFlowView } from "./views/FullDayFlowView";
 import {
   toDateStr,
   dailyNotePath,
@@ -26,6 +27,8 @@ export default class DayFlowPlugin extends Plugin {
         (dateStr, name) => this.createMeetingNote(dateStr, name),
         (dateStr) => this.createDailyNote(dateStr),
         (dateStr, name) => this.createRecurringMeeting(dateStr, name),
+        (dateStr) => this.openFullDayFlow(dateStr),
+        (dateStr) => this.updateFullDayFlowViews(dateStr),
       )
     );
 
@@ -36,16 +39,37 @@ export default class DayFlowPlugin extends Plugin {
       })
     );
 
+    this.registerView(VIEW_TYPE_FULL_DAY_FLOW, (leaf) => {
+      const view = new FullDayFlowView(leaf, toDateStr(new Date()));
+      view.setOpenFileCallback((filePath, line) => {
+        const file = this.app.vault.getAbstractFileByPath(filePath);
+        if (file instanceof TFile) this.openFile(file, line);
+      });
+      return view;
+    });
+
     // Ribbon icon
     this.addRibbonIcon("layout-dashboard", "Toggle DayFlow", () => {
       this.toggleMode();
     });
 
-    // Command
+    // Commands
     this.addCommand({
       id: "toggle-dayflow",
       name: "Toggle DayFlow",
       callback: () => this.toggleMode(),
+    });
+
+    this.addCommand({
+      id: "open-full-day-flow",
+      name: "Open Full Day Flow",
+      callback: () => {
+        const leftLeaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_LEFT_SIDEBAR);
+        const dateStr = leftLeaves.length > 0
+          ? (leftLeaves[0].view as LeftSidebarView).getSelectedDateStr()
+          : toDateStr(new Date());
+        this.openFullDayFlow(dateStr);
+      },
     });
 
     // Live editor changes — reads directly from editor buffer
@@ -122,6 +146,7 @@ export default class DayFlowPlugin extends Plugin {
     // Close our views
     this.app.workspace.detachLeavesOfType(VIEW_TYPE_LEFT_SIDEBAR);
     this.app.workspace.detachLeavesOfType(VIEW_TYPE_RIGHT_SIDEBAR);
+    this.app.workspace.detachLeavesOfType(VIEW_TYPE_FULL_DAY_FLOW);
 
     new Notice("DayFlow deactivated");
   }
@@ -137,6 +162,32 @@ export default class DayFlowPlugin extends Plugin {
         editor.setCursor({ line, ch: 0 });
         editor.scrollIntoView({ from: { line, ch: 0 }, to: { line, ch: 0 } }, true);
       }
+    }
+  }
+
+  async openFullDayFlow(dateStr: string) {
+    // Reuse an existing Full Day Flow tab if one is open
+    const existing = this.app.workspace.getLeavesOfType(VIEW_TYPE_FULL_DAY_FLOW);
+    if (existing.length > 0) {
+      const view = existing[0].view as FullDayFlowView;
+      await view.setDate(dateStr);
+      this.app.workspace.setActiveLeaf(existing[0], { focus: true });
+      return;
+    }
+
+    const leaf = this.app.workspace.getLeaf(true);
+    await leaf.setViewState({
+      type: VIEW_TYPE_FULL_DAY_FLOW,
+      active: true,
+      state: { dateStr },
+    });
+  }
+
+  private async updateFullDayFlowViews(dateStr: string) {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_FULL_DAY_FLOW);
+    for (const leaf of leaves) {
+      const view = leaf.view as FullDayFlowView;
+      await view.setDate(dateStr);
     }
   }
 

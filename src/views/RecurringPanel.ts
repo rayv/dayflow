@@ -41,10 +41,12 @@ class AddRecurringModal extends Modal {
       const addExistingBtn = contentEl.createEl("button", { text: "Add entry for today", cls: "mod-cta" });
       addExistingBtn.style.marginTop = "8px";
       addExistingBtn.style.width = "100%";
-      addExistingBtn.addEventListener("click", () => {
+      addExistingBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         if (selectedFile) {
-          this.onSelectExisting(selectedFile);
           this.close();
+          this.onSelectExisting(selectedFile);
         }
       });
 
@@ -61,10 +63,11 @@ class AddRecurringModal extends Modal {
 
     input.inputEl.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.key === "Enter") {
+        e.preventDefault();
         const val = input.getValue().trim();
         if (val) {
-          this.onCreateNew(val);
           this.close();
+          this.onCreateNew(val);
         }
       }
     });
@@ -72,11 +75,13 @@ class AddRecurringModal extends Modal {
     const createBtn = contentEl.createEl("button", { text: "Create", cls: "mod-cta" });
     createBtn.style.marginTop = "8px";
     createBtn.style.width = "100%";
-    createBtn.addEventListener("click", () => {
+    createBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const val = input.getValue().trim();
       if (val) {
-        this.onCreateNew(val);
         this.close();
+        this.onCreateNew(val);
       }
     });
   }
