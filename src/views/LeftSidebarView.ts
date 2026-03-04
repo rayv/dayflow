@@ -4,7 +4,7 @@ import { CalendarWidget } from "./CalendarWidget";
 import { DailyOutline } from "./DailyOutline";
 import { MeetingsPanel } from "./MeetingsPanel";
 import { RecurringPanel } from "./RecurringPanel";
-import { toDateStr, dailyNotePath } from "../utils/dateUtils";
+import { toDateStr, fromDateStr, dailyNotePath } from "../utils/dateUtils";
 
 export class LeftSidebarView extends ItemView {
   private calendar: CalendarWidget | null = null;
@@ -114,6 +114,18 @@ export class LeftSidebarView extends ItemView {
 
   getSelectedDateStr(): string {
     return this.selectedDateStr;
+  }
+
+  getShowWeekends(): boolean {
+    return this.calendar?.getShowWeekends() ?? false;
+  }
+
+  async setSelectedDate(dateStr: string) {
+    this.selectedDateStr = dateStr;
+    if (this.calendar) {
+      this.calendar.setSelectedDate(fromDateStr(dateStr));
+    }
+    await this.refreshPanels();
   }
 
   async onClose() {

@@ -45,6 +45,8 @@ export default class DayFlowPlugin extends Plugin {
         const file = this.app.vault.getAbstractFileByPath(filePath);
         if (file instanceof TFile) this.openFile(file, line);
       });
+      view.setNavigateCallback((dateStr) => this.navigateFullDayFlow(dateStr));
+      view.setSkipWeekendsCallback(() => this.getShowWeekends());
       return view;
     });
 
@@ -181,6 +183,26 @@ export default class DayFlowPlugin extends Plugin {
       active: true,
       state: { dateStr },
     });
+  }
+
+  private getShowWeekends(): boolean {
+    const leftLeaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_LEFT_SIDEBAR);
+    if (leftLeaves.length > 0) {
+      return (leftLeaves[0].view as LeftSidebarView).getShowWeekends();
+    }
+    return false;
+  }
+
+  private async navigateFullDayFlow(dateStr: string) {
+    // Update the Full Day Flow view
+    await this.updateFullDayFlowViews(dateStr);
+
+    // Sync the left sidebar calendar to the new date
+    const leftLeaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_LEFT_SIDEBAR);
+    for (const leaf of leftLeaves) {
+      const view = leaf.view as LeftSidebarView;
+      view.setSelectedDate(dateStr);
+    }
   }
 
   private async updateFullDayFlowViews(dateStr: string) {

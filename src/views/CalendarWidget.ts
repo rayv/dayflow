@@ -206,6 +206,10 @@ export class CalendarWidget {
     this.render();
   }
 
+  getShowWeekends(): boolean {
+    return this.showWeekends;
+  }
+
   destroy() {
     this.containerEl.remove();
   }

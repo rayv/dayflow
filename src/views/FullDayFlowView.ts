@@ -3,6 +3,7 @@ import { VIEW_TYPE_FULL_DAY_FLOW } from "../types";
 import {
   formatDateHeader,
   fromDateStr,
+  toDateStr,
   dailyNotePath,
   meetingsFolderPath,
   recurringFolderPath,
@@ -21,6 +22,8 @@ interface ContentSection {
 export class FullDayFlowView extends ItemView {
   private dateStr: string;
   private openFileCallback: ((filePath: string, line?: number) => void) | null = null;
+  private navigateCallback: ((dateStr: string) => void) | null = null;
+  private skipWeekendsCallback: (() => boolean) | null = null;
 
   constructor(leaf: WorkspaceLeaf, dateStr: string) {
     super(leaf);
@@ -29,6 +32,14 @@ export class FullDayFlowView extends ItemView {
 
   setOpenFileCallback(cb: (filePath: string, line?: number) => void) {
     this.openFileCallback = cb;
+  }
+
+  setNavigateCallback(cb: (dateStr: string) => void) {
+    this.navigateCallback = cb;
+  }
+
+  setSkipWeekendsCallback(cb: () => boolean) {
+    this.skipWeekendsCallback = cb;
   }
 
   getViewType(): string {
@@ -66,6 +77,24 @@ export class FullDayFlowView extends ItemView {
     await this.render();
   }
 
+  private navigateDay(direction: 1 | -1) {
+    const skipWeekends = this.skipWeekendsCallback ? !this.skipWeekendsCallback() : true;
+    const date = fromDateStr(this.dateStr);
+    date.setDate(date.getDate() + direction);
+
+    if (skipWeekends) {
+      // Skip Saturday (6) and Sunday (0)
+      while (date.getDay() === 0 || date.getDay() === 6) {
+        date.setDate(date.getDate() + direction);
+      }
+    }
+
+    const newDateStr = toDateStr(date);
+    if (this.navigateCallback) {
+      this.navigateCallback(newDateStr);
+    }
+  }
+
   private async render() {
     const container = this.containerEl.children[1] as HTMLElement;
     container.empty();
@@ -73,8 +102,19 @@ export class FullDayFlowView extends ItemView {
 
     const date = fromDateStr(this.dateStr);
     const header = container.createDiv({ cls: "rays-fdf-header" });
-    header.createEl("h1", { text: formatDateHeader(date) });
-    header.createDiv({ cls: "rays-fdf-subtitle", text: "Full Day Flow" });
+
+    const nav = header.createDiv({ cls: "rays-fdf-nav" });
+    const prevBtn = nav.createEl("button", { cls: "rays-fdf-nav-btn", text: "\u25C0" });
+    prevBtn.setAttribute("aria-label", "Previous day");
+    prevBtn.addEventListener("click", () => this.navigateDay(-1));
+
+    const titleWrap = nav.createDiv({ cls: "rays-fdf-nav-title" });
+    titleWrap.createEl("h1", { text: formatDateHeader(date) });
+    titleWrap.createDiv({ cls: "rays-fdf-subtitle", text: "Full Day Flow" });
+
+    const nextBtn = nav.createEl("button", { cls: "rays-fdf-nav-btn", text: "\u25B6" });
+    nextBtn.setAttribute("aria-label", "Next day");
+    nextBtn.addEventListener("click", () => this.navigateDay(1));
 
     const sections = await this.gatherSections(date);
 
