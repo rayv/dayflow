@@ -4,6 +4,8 @@ import fs from "fs";
 
 const prod = process.argv[2] === "production";
 
+fs.mkdirSync("dist", { recursive: true });
+
 const context = await esbuild.context({
   entryPoints: ["src/main.ts"],
   bundle: true,
@@ -27,12 +29,19 @@ const context = await esbuild.context({
   logLevel: "info",
   sourcemap: prod ? false : "inline",
   treeShaking: true,
-  outfile: "main.js",
+  outfile: "dist/main.js",
 });
+
+function copyStatics() {
+  fs.copyFileSync("manifest.json", "dist/manifest.json");
+  fs.copyFileSync("styles.css", "dist/styles.css");
+}
 
 if (prod) {
   await context.rebuild();
+  copyStatics();
   process.exit(0);
 } else {
+  copyStatics();
   await context.watch();
 }

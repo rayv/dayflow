@@ -3,6 +3,7 @@ import { VIEW_TYPE_LEFT_SIDEBAR, VIEW_TYPE_RIGHT_SIDEBAR, VIEW_TYPE_FULL_DAY_FLO
 import { LeftSidebarView } from "./views/LeftSidebarView";
 import { RightSidebarView } from "./views/RightSidebarView";
 import { FullDayFlowView } from "./views/FullDayFlowView";
+import { DayFlowSettings, DEFAULT_SETTINGS, DayFlowSettingTab } from "./settings";
 import {
   toDateStr,
   dailyNotePath,
@@ -14,10 +15,21 @@ import {
 } from "./utils/dateUtils";
 
 export default class DayFlowPlugin extends Plugin {
+  settings: DayFlowSettings = DEFAULT_SETTINGS;
   private isActive = false;
   private refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
+
   async onload() {
+    await this.loadSettings();
+    this.addSettingTab(new DayFlowSettingTab(this.app, this));
     // Register views
     this.registerView(VIEW_TYPE_LEFT_SIDEBAR, (leaf) =>
       new LeftSidebarView(
@@ -29,6 +41,10 @@ export default class DayFlowPlugin extends Plugin {
         (dateStr, name) => this.createRecurringMeeting(dateStr, name),
         (dateStr) => this.openFullDayFlow(dateStr),
         (dateStr) => this.updateFullDayFlowViews(dateStr),
+        {
+          showWeekends: this.settings.showWeekends,
+          defaultCalendarView: this.settings.defaultCalendarView,
+        },
       )
     );
 
@@ -107,6 +123,21 @@ export default class DayFlowPlugin extends Plugin {
     if (this.isActive) {
       await this.deactivate();
     }
+  }
+
+  /** Called by the settings tab when the showWeekends setting changes. */
+  applyShowWeekends(value: boolean) {
+    const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_LEFT_SIDEBAR);
+    for (const leaf of leaves) {
+      (leaf.view as LeftSidebarView).applyShowWeekends(value);
+    }
+  }
+
+  /** Called by the settings tab when the defaultCalendarView setting changes. */
+  async reloadDayFlow() {
+    if (!this.isActive) return;
+    await this.deactivate();
+    await this.activate();
   }
 
   private async toggleMode() {

@@ -25,15 +25,25 @@ export class CalendarWidget {
   private selectedDate: Date;
   private showWeekends: boolean = false;
   private onDateSelect: (date: Date) => void;
-
-  constructor(parentEl: HTMLElement, app: App, onDateSelect: (date: Date) => void) {
+  constructor(
+    parentEl: HTMLElement,
+    app: App,
+    onDateSelect: (date: Date) => void,
+    initialShowWeekends = false,
+  ) {
     this.containerEl = parentEl.createDiv({ cls: "rays-calendar" });
     this.app = app;
     this.onDateSelect = onDateSelect;
+    this.showWeekends = initialShowWeekends;
     const today = new Date();
     this.selectedDate = today;
     this.currentMonth = today.getMonth();
     this.currentYear = today.getFullYear();
+    this.render();
+  }
+
+  setShowWeekends(value: boolean) {
+    this.showWeekends = value;
     this.render();
   }
 
@@ -61,22 +71,11 @@ export class CalendarWidget {
     const nextBtn = header.createEl("button", { cls: "rays-calendar-nav", text: "\u25B6" });
     nextBtn.addEventListener("click", () => this.nextMonth());
 
-    // Weekend toggle
-    const toggleRow = this.containerEl.createDiv({ cls: "rays-calendar-toggle" });
-    const label = toggleRow.createEl("label", { cls: "rays-calendar-weekend-label" });
-    const checkbox = label.createEl("input", { type: "checkbox" });
-    checkbox.checked = this.showWeekends;
-    checkbox.addEventListener("change", () => {
-      this.showWeekends = checkbox.checked;
-      this.render();
-    });
-    label.appendText(" Show weekends");
-
     // Pre-compute day info for the month
     const dayInfoMap = await this.computeMonthDayInfo();
 
     // Day headers
-    const grid = this.containerEl.createDiv({ cls: "rays-calendar-grid" });
+    const grid = this.containerEl.createDiv({ cls: `rays-calendar-grid${this.showWeekends ? " show-weekends" : ""}` });
     const dayLabels = this.showWeekends
       ? ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
       : ["Mon", "Tue", "Wed", "Thu", "Fri"];
