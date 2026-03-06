@@ -10,11 +10,11 @@ DayFlow is an **Obsidian plugin** — a TypeScript project bundled via esbuild i
 
 ```bash
 npm install          # install dependencies
-npm run dev          # watch mode — rebuilds main.js on every save
+npm run dev          # watch mode — rebuilds dist/main.js on every save
 npm run build        # type-check + production build
 ```
 
-To test changes: copy `main.js`, `manifest.json`, and `styles.css` into the vault's `.obsidian/plugins/dayflow/` folder, then reload the plugin in Obsidian. In dev mode, only `main.js` needs to be copied after each save.
+To test changes: copy `dist/main.js`, `dist/manifest.json`, and `dist/styles.css` into the vault's `.obsidian/plugins/dayflow/` folder, then reload the plugin in Obsidian. In dev mode, only `dist/main.js` needs to be copied after each save.
 
 ## Architecture
 
@@ -64,7 +64,7 @@ All paths are in `src/utils/dateUtils.ts`:
 - `defaultCalendarView: "week" | "month"` — controls whether `WeekStripWidget` or `CalendarWidget` is shown (mutually exclusive). Changing this calls `plugin.reloadDayFlow()` (deactivate + reactivate).
 - `showWeekends: boolean` — applied live via `plugin.applyShowWeekends()` without reloading.
 
-`LeftSidebarView` receives settings via a `LeftSidebarConfig` object (last constructor param). It owns `showWeekends` as local state so the in-calendar toggle can update it; changes are written back to settings via `onShowWeekendsChange` callback.
+`LeftSidebarView` receives settings via a `LeftSidebarConfig` object (last constructor param). It owns `showWeekends` as local state; changes are written back to settings via `onShowWeekendsChange` callback. The weekend toggle is exposed in the plugin's Settings tab (`DayFlowSettingTab` in `src/settings.ts`) and applied live via `plugin.applyShowWeekends()` without reloading.
 
 ### Types
 

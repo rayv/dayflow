@@ -126,11 +126,11 @@ export default class DayFlowPlugin extends Plugin {
   }
 
   /** Called by the settings tab when the showWeekends setting changes. */
-  applyShowWeekends(value: boolean) {
+  async applyShowWeekends(value: boolean) {
     const leaves = this.app.workspace.getLeavesOfType(VIEW_TYPE_LEFT_SIDEBAR);
-    for (const leaf of leaves) {
-      (leaf.view as LeftSidebarView).applyShowWeekends(value);
-    }
+    await Promise.all(leaves.map((leaf) =>
+      (leaf.view as LeftSidebarView).applyShowWeekends(value)
+    ));
   }
 
   /** Called by the settings tab when the defaultCalendarView setting changes. */
