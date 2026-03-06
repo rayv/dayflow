@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-DayFlow is an **Obsidian plugin** — a TypeScript project bundled via esbuild into a single `main.js` file that Obsidian loads at runtime. There is no test suite. The Obsidian API (`obsidian` package) is external to the bundle and available only inside a running Obsidian instance.
+DayFlow is an **Obsidian plugin** — a TypeScript project bundled via esbuild into `dist/main.js`, which is then copied into the vault's plugin folder for Obsidian to load at runtime. There is no test suite. The Obsidian API (`obsidian` package) is external to the bundle and available only inside a running Obsidian instance.
 
 ## Commands
 
@@ -64,7 +64,7 @@ All paths are in `src/utils/dateUtils.ts`:
 - `defaultCalendarView: "week" | "month"` — controls whether `WeekStripWidget` or `CalendarWidget` is shown (mutually exclusive). Changing this calls `plugin.reloadDayFlow()` (deactivate + reactivate).
 - `showWeekends: boolean` — applied live via `plugin.applyShowWeekends()` without reloading.
 
-`LeftSidebarView` receives settings via a `LeftSidebarConfig` object (last constructor param). It owns `showWeekends` as local state; changes are written back to settings via `onShowWeekendsChange` callback. The weekend toggle is exposed in the plugin's Settings tab (`DayFlowSettingTab` in `src/settings.ts`) and applied live via `plugin.applyShowWeekends()` without reloading.
+`LeftSidebarView` receives settings via a `LeftSidebarConfig` object (last constructor param) and owns `showWeekends` as local state. Weekend visibility is controlled entirely through the plugin's Settings tab (`DayFlowSettingTab` in `src/settings.ts`), which calls `plugin.applyShowWeekends()` to push the new value into all open sidebar views without reloading.
 
 ### Types
 

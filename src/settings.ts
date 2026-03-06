@@ -14,7 +14,7 @@ export const DEFAULT_SETTINGS: DayFlowSettings = {
 interface SettingsHost {
   settings: DayFlowSettings;
   saveSettings(): Promise<void>;
-  applyShowWeekends(value: boolean): void;
+  applyShowWeekends(value: boolean): Promise<void>;
   reloadDayFlow(): Promise<void>;
 }
 
@@ -55,7 +55,7 @@ export class DayFlowSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.showWeekends = value;
             await this.plugin.saveSettings();
-            this.plugin.applyShowWeekends(value);
+            await this.plugin.applyShowWeekends(value);
           })
       );
   }
