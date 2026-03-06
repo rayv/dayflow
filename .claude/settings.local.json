@@ -10,7 +10,10 @@
       "Bash(npm run build)",
       "WebFetch(domain:obsidian.md)",
       "Bash(git add src/views/RightSidebarView.ts styles.css)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npx tsc -noEmit -skipLibCheck 2>&1)",
+      "Bash(./node_modules/.bin/tsc -noEmit -skipLibCheck 2>&1)",
+      "Bash(git add src/main.ts src/views/CalendarWidget.ts src/views/LeftSidebarView.ts src/views/RightSidebarView.ts styles.css src/settings.ts src/views/WeekStripWidget.ts esbuild.config.mjs .gitignore package-lock.json CLAUDE.md)"
     ]
   }
 }

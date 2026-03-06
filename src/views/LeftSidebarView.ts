@@ -1,17 +1,26 @@
 import { App, ItemView, TFile, WorkspaceLeaf, setIcon } from "obsidian";
 import { VIEW_TYPE_LEFT_SIDEBAR } from "../types";
 import { CalendarWidget } from "./CalendarWidget";
+import { WeekStripWidget } from "./WeekStripWidget";
 import { DailyOutline } from "./DailyOutline";
 import { MeetingsPanel } from "./MeetingsPanel";
 import { RecurringPanel } from "./RecurringPanel";
 import { toDateStr, fromDateStr, dailyNotePath } from "../utils/dateUtils";
 
+export interface LeftSidebarConfig {
+  showWeekends: boolean;
+  defaultCalendarView: "week" | "month";
+}
+
 export class LeftSidebarView extends ItemView {
+  private weekStrip: WeekStripWidget | null = null;
   private calendar: CalendarWidget | null = null;
   private dailyOutline: DailyOutline | null = null;
   private meetingsPanel: MeetingsPanel | null = null;
   private recurringPanel: RecurringPanel | null = null;
   private selectedDateStr: string;
+  private showWeekends: boolean;
+  private defaultCalendarView: "week" | "month";
   private openFileCallback: (file: TFile, line?: number) => void;
   private openRecurringCallback: (file: TFile, dateStr: string) => void;
   private createMeetingCallback: (dateStr: string, name: string) => void;
@@ -29,9 +38,12 @@ export class LeftSidebarView extends ItemView {
     createRecurringCallback: (dateStr: string, name: string) => void,
     fullDayFlowCallback: (dateStr: string) => void,
     dateChangeCallback: (dateStr: string) => void,
+    config: LeftSidebarConfig,
   ) {
     super(leaf);
     this.selectedDateStr = toDateStr(new Date());
+    this.showWeekends = config.showWeekends;
+    this.defaultCalendarView = config.defaultCalendarView;
     this.openFileCallback = openFileCallback;
     this.openRecurringCallback = openRecurringCallback;
     this.createMeetingCallback = createMeetingCallback;
@@ -58,20 +70,32 @@ export class LeftSidebarView extends ItemView {
     container.empty();
     container.addClass("rays-left-sidebar");
 
-    // Calendar
-    this.calendar = new CalendarWidget(container, this.app, async (date) => {
+    const onDaySelected = async (date: Date) => {
       this.selectedDateStr = toDateStr(date);
       await this.refreshPanels();
-
-      // Open daily note if it exists
       const file = this.app.vault.getAbstractFileByPath(dailyNotePath(this.selectedDateStr));
-      if (file instanceof TFile) {
-        this.openFileCallback(file);
-      }
-
-      // Update any open Full Day Flow views
+      if (file instanceof TFile) this.openFileCallback(file);
       this.dateChangeCallback(this.selectedDateStr);
-    });
+    };
+
+    if (this.defaultCalendarView === "week") {
+      this.weekStrip = new WeekStripWidget(
+        container,
+        this.app,
+        onDaySelected,
+        () => this.showWeekends,
+      );
+    } else {
+      this.calendar = new CalendarWidget(
+        container,
+        this.app,
+        async (date) => {
+          this.weekStrip?.navigateToDate(date);
+          await onDaySelected(date);
+        },
+        this.showWeekends,
+      );
+    }
 
     // Daily Outline
     this.dailyOutline = new DailyOutline(container, this.app, (file, line) => {
@@ -107,6 +131,7 @@ export class LeftSidebarView extends ItemView {
   }
 
   async refreshPanels() {
+    if (this.weekStrip) await this.weekStrip.refresh();
     if (this.dailyOutline) await this.dailyOutline.update(this.selectedDateStr);
     if (this.meetingsPanel) await this.meetingsPanel.update(this.selectedDateStr);
     if (this.recurringPanel) await this.recurringPanel.update(this.selectedDateStr);
@@ -117,18 +142,25 @@ export class LeftSidebarView extends ItemView {
   }
 
   getShowWeekends(): boolean {
-    return this.calendar?.getShowWeekends() ?? false;
+    return this.showWeekends;
+  }
+
+  async applyShowWeekends(value: boolean) {
+    this.showWeekends = value;
+    if (this.calendar) this.calendar.setShowWeekends(value);
+    if (this.weekStrip) await this.weekStrip.refresh();
   }
 
   async setSelectedDate(dateStr: string) {
     this.selectedDateStr = dateStr;
-    if (this.calendar) {
-      this.calendar.setSelectedDate(fromDateStr(dateStr));
-    }
+    const date = fromDateStr(dateStr);
+    if (this.calendar) this.calendar.setSelectedDate(date);
+    this.weekStrip?.navigateToDate(date);
     await this.refreshPanels();
   }
 
   async onClose() {
+    this.weekStrip?.destroy();
     this.calendar?.destroy();
     this.dailyOutline?.destroy();
     this.meetingsPanel?.destroy();
